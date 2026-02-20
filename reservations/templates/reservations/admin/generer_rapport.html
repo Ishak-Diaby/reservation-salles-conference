@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Générer un Rapport - Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6">
+                <i class="bi bi-graph-up"></i> Générer un Rapport Statistique
+            </h1>
+            <p class="text-muted">Créez des rapports d'utilisation personnalisés</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-range"></i> Paramètres du Rapport
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 
+                            Sélectionnez une période pour générer un rapport statistique détaillé
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date_debut.id_for_label }}" class="form-label">
+                                    <i class="bi bi-calendar"></i> Date de début *
+                                </label>
+                                {% render_field form.date_debut class="form-control" required="required" %}
+                                {% if form.date_debut.errors %}
+                                    <div class="text-danger small mt-1">{{ form.date_debut.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date_fin.id_for_label }}" class="form-label">
+                                    <i class="bi bi-calendar-check"></i> Date de fin *
+                                </label>
+                                {% render_field form.date_fin class="form-control" required="required" %}
+                                {% if form.date_fin.errors %}
+                                    <div class="text-danger small mt-1">{{ form.date_fin.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Périodes rapides -->
+                        <div class="mb-4">
+                            <label class="form-label">Périodes prédéfinies</label>
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-outline-secondary" onclick="setPeriod(7)">
+                                    7 derniers jours
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="setPeriod(30)">
+                                    30 derniers jours
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="setPeriod(90)">
+                                    3 derniers mois
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card bg-light mb-4">
+                            <div class="card-body">
+                                <h6><i class="bi bi-graph-up-arrow"></i> Le rapport inclura :</h6>
+                                <ul class="mb-0">
+                                    <li>Nombre total de réservations</li>
+                                    <li>Répartition par statut (confirmées, annulées, refusées)</li>
+                                    <li>Répartition par type d'utilisateur</li>
+                                    <li>Salles les plus populaires</li>
+                                    <li>Taux d'occupation des salles</li>
+                                    <li>Heures de pointe</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-file-earmark-bar-graph"></i> Générer le rapport
+                            </button>
+                            <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Conseils -->
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0"><i class="bi bi-lightbulb"></i> Conseils</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small mb-0">
+                        <li class="mb-2">Utilisez des périodes de 7 à 90 jours pour des rapports pertinents</li>
+                        <li class="mb-2">Les rapports peuvent être exportés en PDF</li>
+                        <li class="mb-2">Les données sont mises à jour en temps réel</li>
+                        <li>Conservez les rapports pour un suivi historique</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Rapports récents -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="bi bi-clock-history"></i> Rapports récents</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-2">Vos derniers rapports générés</p>
+                    <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-action small">
+                            <div class="d-flex w-100 justify-content-between">
+                                <strong>Rapport mensuel</strong>
+                                <small>Il y a 2 jours</small>
+                            </div>
+                            <small class="text-muted">01/01/2025 - 31/01/2025</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function setPeriod(days) {
+    const today = new Date();
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - days);
+    
+    // Format dates to YYYY-MM-DD
+    const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+    
+    document.querySelector('input[name="date_debut"]').value = formatDate(startDate);
+    document.querySelector('input[name="date_fin"]').value = formatDate(today);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Réservation #{{ reservation.pk }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'mes_reservations' %}">Mes réservations</a></li>
+            <li class="breadcrumb-item active">Réservation #{{ reservation.pk }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header {% if reservation.statut == 'confirmee' %}bg-success{% elif reservation.statut == 'en_attente' %}bg-warning{% else %}bg-secondary{% endif %} text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-calendar-event"></i> 
+                        Réservation #{{ reservation.pk }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Statut -->
+                    <div class="alert {% if reservation.statut == 'confirmee' %}alert-success{% elif reservation.statut == 'en_attente' %}alert-warning{% elif reservation.statut == 'refusee' %}alert-danger{% else %}alert-secondary{% endif %}">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h5 class="mb-0">
+                                    {% if reservation.statut == 'confirmee' %}
+                                        <i class="bi bi-check-circle"></i> Réservation confirmée
+                                    {% elif reservation.statut == 'en_attente' %}
+                                        <i class="bi bi-clock-history"></i> En attente de validation
+                                    {% elif reservation.statut == 'annulee' %}
+                                        <i class="bi bi-x-circle"></i> Réservation annulée
+                                    {% elif reservation.statut == 'refusee' %}
+                                        <i class="bi bi-x-octagon"></i> Réservation refusée
+                                    {% endif %}
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informations de la salle -->
+                    <h5 class="mt-4"><i class="bi bi-door-open"></i> Salle</h5>
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ reservation.salle.nom }}</h5>
+                            <p class="card-text">
+                                <i class="bi bi-building"></i> {{ reservation.salle.batiment }} - Étage {{ reservation.salle.etage }}<br>
+                                <i class="bi bi-people"></i> Capacité: {{ reservation.salle.capacite }} personnes<br>
+                                <i class="bi bi-tag"></i> Type: {{ reservation.salle.get_type_salle_display }}
+                            </p>
+                            <a href="{% url 'detail_salle' reservation.salle.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> Voir la salle
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Détails de la réservation -->
+                    <h5><i class="bi bi-info-circle"></i> Détails de la réservation</h5>
+                    <table class="table table-striped">
+                        <tbody>
+                            <tr>
+                                <th width="40%"><i class="bi bi-calendar"></i> Date</th>
+                                <td>{{ reservation.date_reservation|date:"l d F Y" }}</td>
+                            </tr>
+                            <tr>
+                                <th><i class="bi bi-clock"></i> Horaire</th>
+                                <td>{{ reservation.heure_debut }} - {{ reservation.heure_fin }}</td>
+                            </tr>
+                            <tr>
+                                <th><i class="bi bi-people"></i> Nombre de participants</th>
+                                <td>{{ reservation.nombre_participants }}</td>
+                            </tr>
+                            <tr>
+                                <th><i class="bi bi-file-text"></i> Motif</th>
+                                <td>{{ reservation.motif }}</td>
+                            </tr>
+                            <tr>
+                                <th><i class="bi bi-person"></i> Réservé par</th>
+                                <td>{{ reservation.utilisateur.get_full_name }} ({{ reservation.utilisateur.get_type_utilisateur_display }})</td>
+                            </tr>
+                            <tr>
+                                <th><i class="bi bi-calendar-plus"></i> Date de création</th>
+                                <td>{{ reservation.created_at|date:"d/m/Y à H:i" }}</td>
+                            </tr>
+                            {% if reservation.updated_at %}
+                            <tr>
+                                <th><i class="bi bi-pencil"></i> Dernière modification</th>
+                                <td>{{ reservation.updated_at|date:"d/m/Y à H:i" }}</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+
+                    <!-- Actions -->
+                    <div class="d-grid gap-2 mt-4">
+                        {% if reservation.statut in 'en_attente,confirmee' %}
+                            {% if reservation.peut_etre_modifiee %}
+                                <a href="{% url 'annuler_reservation' reservation.pk %}" 
+                                   class="btn btn-danger">
+                                    <i class="bi bi-trash"></i> Annuler cette réservation
+                                </a>
+                            {% else %}
+                                <div class="alert alert-info mb-0">
+                                    <i class="bi bi-info-circle"></i> 
+                                    Impossible de modifier ou annuler cette réservation (moins de 2h avant le début)
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                        
+                        <a href="{% url 'mes_reservations' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Retour à mes réservations
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Conseils -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h6><i class="bi bi-lightbulb text-warning"></i> Bon à savoir</h6>
+                    <ul class="small mb-0">
+                        <li>Vous pouvez annuler jusqu'à 2h avant le début</li>
+                        <li>Les modifications ne sont plus possibles après validation</li>
+                        <li>Pensez à vérifier vos notifications</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            {% if reservation.statut == 'en_attente' %}
+            <div class="card border-warning">
+                <div class="card-body">
+                    <h6><i class="bi bi-exclamation-triangle text-warning"></i> En attente</h6>
+                    <p class="small mb-0">
+                        Votre réservation est en attente de validation par un administrateur. 
+                        Vous recevrez une notification dès qu'elle sera traitée.
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

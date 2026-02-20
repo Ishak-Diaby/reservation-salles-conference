@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-5">
+                <i class="bi bi-house-door"></i> Tableau de bord
+            </h1>
+            <p class="text-muted">
+                Bonjour {{ user.get_full_name }} ({{ user.get_type_utilisateur_display }})
+            </p>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-check text-primary" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2">{{ total_reservations }}</h3>
+                    <p class="text-muted mb-0">Mes réservations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-clock-history text-warning" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2">{{ en_attente }}</h3>
+                    <p class="text-muted mb-0">En attente</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2">{{ confirmees }}</h3>
+                    <p class="text-muted mb-0">Confirmées</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <i class="bi bi-bell text-info" style="font-size: 2rem;"></i>
+                    <h3 class="mt-2">{{ notifications_non_lues }}</h3>
+                    <p class="text-muted mb-0">Notifications</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prochaines réservations -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Mes prochaines réservations</h5>
+                </div>
+                <div class="card-body">
+                    {% if prochaines %}
+                        <div class="list-group">
+                            {% for reservation in prochaines %}
+                            <a href="{% url 'detail_reservation' reservation.pk %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">
+                                        <i class="bi bi-door-open text-primary"></i> {{ reservation.salle.nom }}
+                                    </h6>
+                                    <small>{{ reservation.date_reservation }}</small>
+                                </div>
+                                <p class="mb-1">
+                                    <i class="bi bi-clock"></i> {{ reservation.heure_debut }} - {{ reservation.heure_fin }}
+                                </p>
+                                <small class="text-muted">{{ reservation.motif|truncatewords:15 }}</small>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center my-4">
+                            <i class="bi bi-calendar-x" style="font-size: 3rem;"></i><br>
+                            Aucune réservation à venir
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions rapides -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-lightning"></i> Actions rapides</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'creer_reservation' %}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Nouvelle réservation
+                        </a>
+                        <a href="{% url 'rechercher_salles' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-search"></i> Rechercher une salle
+                        </a>
+                        <a href="{% url 'mes_reservations' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-list-check"></i> Voir mes réservations
+                        </a>
+                        <a href="{% url 'liste_salles' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-building"></i> Parcourir les salles
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {% if user.is_staff or user.type_utilisateur == 'administrateur' %}
+            <div class="card mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-gear"></i> Administration</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-warning">
+                            <i class="bi bi-speedometer2"></i> Dashboard Admin
+                        </a>
+                        <a href="{% url 'validation_reservations' %}" class="btn btn-outline-warning">
+                            <i class="bi bi-check-square"></i> Valider réservations
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

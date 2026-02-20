@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Rechercher une Salle{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6">
+                <i class="bi bi-search"></i> Rechercher une Salle Disponible
+            </h1>
+            <p class="text-muted">Trouvez la salle parfaite pour votre créneau</p>
+        </div>
+    </div>
+
+    <!-- Formulaire de recherche -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Critères de recherche</h5>
+        </div>
+        <div class="card-body">
+            <form method="get">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="{{ form.date_reservation.id_for_label }}" class="form-label">
+                            <i class="bi bi-calendar"></i> Date *
+                        </label>
+                        {% render_field form.date_reservation class="form-control" %}
+                        {% if form.date_reservation.errors %}
+                            <div class="text-danger small mt-1">{{ form.date_reservation.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="{{ form.heure_debut.id_for_label }}" class="form-label">
+                            <i class="bi bi-clock"></i> Heure de début *
+                        </label>
+                        {% render_field form.heure_debut class="form-control" %}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="{{ form.heure_fin.id_for_label }}" class="form-label">
+                            <i class="bi bi-clock-fill"></i> Heure de fin *
+                        </label>
+                        {% render_field form.heure_fin class="form-control" %}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="{{ form.capacite_min.id_for_label }}" class="form-label">
+                            <i class="bi bi-people"></i> Capacité minimale
+                        </label>
+                        {% render_field form.capacite_min class="form-control" placeholder="Ex: 30" %}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="{{ form.type_salle.id_for_label }}" class="form-label">
+                            <i class="bi bi-tag"></i> Type de salle
+                        </label>
+                        {{ form.type_salle }}
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="{{ form.batiment.id_for_label }}" class="form-label">
+                            <i class="bi bi-building"></i> Bâtiment
+                        </label>
+                        {% render_field form.batiment class="form-control" placeholder="Ex: Bâtiment A" %}
+                    </div>
+
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-search"></i> Rechercher
+                        </button>
+                        <a href="{% url 'rechercher_salles' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-arrow-clockwise"></i> Réinitialiser
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Résultats -->
+    {% if salles is not None %}
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-check-circle"></i> 
+                Résultats de la recherche ({{ salles|length }} salle{{ salles|length|pluralize }} trouvée{{ salles|length|pluralize }})
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if salles %}
+            <div class="row g-4">
+                {% for salle in salles %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">
+                                    <i class="bi bi-door-open text-success"></i> {{ salle.nom }}
+                                </h5>
+                                <span class="badge bg-success">Disponible</span>
+                            </div>
+
+                            <p class="card-text">
+                                <i class="bi bi-building"></i> {{ salle.batiment }} - Étage {{ salle.etage }}<br>
+                                <i class="bi bi-people"></i> Capacité: {{ salle.capacite }} personnes<br>
+                                <i class="bi bi-tag"></i> Type: {{ salle.get_type_salle_display }}
+                            </p>
+
+                            {% if salle.equipements %}
+                            <div class="mb-3">
+                                <small class="text-muted">Équipements:</small><br>
+                                {% for equipement in salle.equipements %}
+                                <span class="badge bg-secondary me-1 mb-1">{{ equipement }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'detail_salle' salle.pk %}" class="btn btn-outline-success btn-sm">
+                                    <i class="bi bi-eye"></i> Voir détails
+                                </a>
+                                <a href="{% url 'creer_reservation_salle' salle.pk %}" class="btn btn-success btn-sm">
+                                    <i class="bi bi-calendar-plus"></i> Réserver maintenant
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-x-circle text-warning" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">Aucune salle disponible</h4>
+                <p class="text-muted">
+                    Aucune salle ne correspond à vos critères pour ce créneau.<br>
+                    Essayez avec d'autres dates ou horaires.
+                </p>
+                <a href="{% url 'liste_salles' %}" class="btn btn-primary mt-3">
+                    <i class="bi bi-list"></i> Voir toutes les salles
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

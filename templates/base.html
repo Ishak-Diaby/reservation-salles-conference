@@ -1,0 +1,132 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Réservation de Salles{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <i class="bi bi-building"></i> Réservation de Salles
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">
+                            <i class="bi bi-house-door"></i> Tableau de bord
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'rechercher_salles' %}">
+                            <i class="bi bi-search"></i> Rechercher
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'liste_salles' %}">
+                            <i class="bi bi-door-open"></i> Salles
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'creer_reservation' %}">
+                            <i class="bi bi-plus-circle"></i> Nouvelle réservation
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'mes_reservations' %}">
+                            <i class="bi bi-calendar-check"></i> Mes réservations
+                        </a>
+                    </li>
+                    {% if user.is_staff or user.type_utilisateur == 'administrateur' %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-gear"></i> Administration
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'admin_dashboard' %}">Dashboard Admin</a></li>
+                            <li><a class="dropdown-item" href="{% url 'gestion_salles' %}">Gérer les salles</a></li>
+                            <li><a class="dropdown-item" href="{% url 'validation_reservations' %}">Valider réservations</a></li>
+                            <li><a class="dropdown-item" href="{% url 'generer_rapport' %}">Générer rapport</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link position-relative" href="{% url 'liste_notifications' %}">
+                            <i class="bi bi-bell"></i> Notifications
+                            {% if notifications_non_lues > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ notifications_non_lues }}
+                            </span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> {{ user.get_full_name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item disabled">{{ user.get_type_utilisateur_display }}</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="bi bi-box-arrow-right"></i> Déconnexion
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Messages Flash -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Contenu principal -->
+    <main class="{% if user.is_authenticated %}container my-4{% endif %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% if user.is_authenticated %}
+    <footer class="bg-light py-3 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">&copy; 2026 Système de Réservation de Salles - Université</p>
+        </div>
+    </footer>
+    {% endif %}
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

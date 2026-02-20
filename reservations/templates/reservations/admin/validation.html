@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Validation des Réservations - Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6">
+                <i class="bi bi-check-square"></i> Validation des Réservations
+            </h1>
+            <p class="text-muted">Gérer les réservations en attente de validation</p>
+        </div>
+    </div>
+
+    {% if reservations %}
+    <!-- Statistiques -->
+    <div class="alert alert-warning">
+        <div class="row align-items-center">
+            <div class="col">
+                <i class="bi bi-exclamation-triangle"></i> 
+                <strong>{{ reservations|length }} réservation{{ reservations|length|pluralize }}</strong> en attente de validation
+            </div>
+            <div class="col-auto">
+                <small class="text-muted">Traitez-les rapidement pour ne pas bloquer les utilisateurs</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des réservations -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Horaire</th>
+                            <th>Utilisateur</th>
+                            <th>Salle</th>
+                            <th>Participants</th>
+                            <th>Motif</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in reservations %}
+                        <tr>
+                            <td>
+                                <strong>{{ reservation.date_reservation|date:"d/m/Y" }}</strong>
+                                <br>
+                                <small class="text-muted">{{ reservation.date_reservation|date:"l" }}</small>
+                            </td>
+                            <td>
+                                <i class="bi bi-clock"></i> 
+                                {{ reservation.heure_debut }}<br>
+                                <i class="bi bi-clock-fill"></i> 
+                                {{ reservation.heure_fin }}
+                            </td>
+                            <td>
+                                <i class="bi bi-person"></i> 
+                                <strong>{{ reservation.utilisateur.get_full_name }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {{ reservation.utilisateur.get_type_utilisateur_display }}
+                                    {% if reservation.utilisateur.type_utilisateur == 'etudiant' %}
+                                        ({{ reservation.utilisateur.niveau }})
+                                    {% elif reservation.utilisateur.type_utilisateur == 'professeur' %}
+                                        ({{ reservation.utilisateur.departement }})
+                                    {% endif %}
+                                </small>
+                            </td>
+                            <td>
+                                <i class="bi bi-door-open"></i> 
+                                <strong>{{ reservation.salle.nom }}</strong>
+                                <br>
+                                <small class="text-muted">{{ reservation.salle.batiment }}</small>
+                            </td>
+                            <td class="text-center">
+                                <i class="bi bi-people"></i> {{ reservation.nombre_participants }}
+                                <br>
+                                <small class="text-muted">/ {{ reservation.salle.capacite }}</small>
+                            </td>
+                            <td>
+                                <small>{{ reservation.motif|truncatewords:8 }}</small>
+                            </td>
+                            <td>
+                                <div class="btn-group-vertical btn-group-sm" role="group">
+                                    <form method="post" action="{% url 'valider_reservation' reservation.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success w-100 mb-1">
+                                            <i class="bi bi-check-circle"></i> Valider
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'refuser_reservation' reservation.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger w-100 mb-1">
+                                            <i class="bi bi-x-circle"></i> Refuser
+                                        </button>
+                                    </form>
+                                    <a href="{% url 'detail_reservation' reservation.pk %}" 
+                                       class="btn btn-info w-100">
+                                        <i class="bi bi-eye"></i> Détails
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions groupées -->
+    <div class="card mt-4">
+        <div class="card-body">
+            <h6><i class="bi bi-lightning"></i> Actions rapides</h6>
+            <p class="text-muted small mb-3">
+                Validation groupée bientôt disponible
+            </p>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-success" disabled>
+                    <i class="bi bi-check-all"></i> Valider toutes
+                </button>
+                <button type="button" class="btn btn-outline-danger" disabled>
+                    <i class="bi bi-x-lg"></i> Refuser toutes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Aucune réservation en attente -->
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+            <h3 class="mt-4">Tout est à jour !</h3>
+            <p class="text-muted">
+                Aucune réservation en attente de validation pour le moment.
+            </p>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-primary mt-3">
+                <i class="bi bi-speedometer2"></i> Retour au dashboard
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Retour -->
+    <div class="mt-4">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour au dashboard admin
+        </a>
+    </div>
+</div>
+
+<script>
+// Confirmation avant validation/refus
+document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        const action = this.querySelector('button').textContent.trim();
+        if (action.includes('Valider')) {
+            if (!confirm('Confirmer la validation de cette réservation ?')) {
+                e.preventDefault();
+            }
+        } else if (action.includes('Refuser')) {
+            if (!confirm('Confirmer le refus de cette réservation ? L\'utilisateur sera notifié.')) {
+                e.preventDefault();
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

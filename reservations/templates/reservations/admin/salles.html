@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion des Salles - Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6">
+                <i class="bi bi-door-open"></i> Gestion des Salles
+            </h1>
+            <p class="text-muted">Administration complète des salles</p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'creer_salle' %}" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Ajouter une salle
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>{{ salles|length }}</h3>
+                    <p class="mb-0">Total salles</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>{{ salles|length }}</h3>
+                    <p class="mb-0">Disponibles</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>{{ salles|length }}</h3>
+                    <p class="mb-0">Capacité totale</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3>0</h3>
+                    <p class="mb-0">Hors service</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des salles -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-list"></i> Liste complète des salles</h5>
+        </div>
+        <div class="card-body">
+            {% if salles %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Bâtiment</th>
+                            <th>Étage</th>
+                            <th>Capacité</th>
+                            <th>Type</th>
+                            <th>Équipements</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for salle in salles %}
+                        <tr>
+                            <td><strong>{{ salle.nom }}</strong></td>
+                            <td>{{ salle.batiment }}</td>
+                            <td class="text-center">{{ salle.etage }}</td>
+                            <td class="text-center">
+                                <i class="bi bi-people"></i> {{ salle.capacite }}
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ salle.get_type_salle_display }}</span>
+                            </td>
+                            <td>
+                                {% if salle.equipements %}
+                                    <small>
+                                        {% for equipement in salle.equipements|slice:":2" %}
+                                            <span class="badge bg-secondary">{{ equipement }}</span>
+                                        {% endfor %}
+                                        {% if salle.equipements|length > 2 %}
+                                            <span class="badge bg-secondary">+{{ salle.equipements|length|add:"-2" }}</span>
+                                        {% endif %}
+                                    </small>
+                                {% else %}
+                                    <small class="text-muted">Aucun</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if salle.est_disponible %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle"></i> Disponible
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-x-circle"></i> Indisponible
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'detail_salle' salle.pk %}" 
+                                       class="btn btn-info" 
+                                       title="Voir">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="#" 
+                                       class="btn btn-warning" 
+                                       title="Modifier">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteModal{{ salle.pk }}"
+                                            title="Supprimer">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Modal de confirmation de suppression -->
+                        <div class="modal fade" id="deleteModal{{ salle.pk }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-danger text-white">
+                                        <h5 class="modal-title">
+                                            <i class="bi bi-exclamation-triangle"></i> Confirmer la suppression
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Êtes-vous sûr de vouloir supprimer la salle <strong>{{ salle.nom }}</strong> ?</p>
+                                        <p class="text-danger">
+                                            <i class="bi bi-exclamation-triangle"></i> 
+                                            Cette action est irréversible et supprimera toutes les réservations associées.
+                                        </p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            Annuler
+                                        </button>
+                                        <form method="post" action="#" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">
+                                                <i class="bi bi-trash"></i> Supprimer
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+                <h4 class="mt-3">Aucune salle</h4>
+                <p class="text-muted">Commencez par ajouter votre première salle</p>
+                <a href="{% url 'creer_salle' %}" class="btn btn-primary mt-3">
+                    <i class="bi bi-plus-circle"></i> Ajouter une salle
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Retour -->
+    <div class="mt-4">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour au dashboard admin
+        </a>
+    </div>
+</div>
+{% endblock %}

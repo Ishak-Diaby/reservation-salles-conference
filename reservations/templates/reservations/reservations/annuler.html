@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Annuler la Réservation{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Annuler la Réservation
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        <strong>Attention !</strong> Cette action est irréversible.
+                    </div>
+
+                    <h5 class="mb-3">Résumé de la réservation</h5>
+                    
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <table class="table table-sm table-borderless mb-0">
+                                <tr>
+                                    <td width="40%"><strong><i class="bi bi-door-open"></i> Salle:</strong></td>
+                                    <td>{{ reservation.salle.nom }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong><i class="bi bi-calendar"></i> Date:</strong></td>
+                                    <td>{{ reservation.date_reservation|date:"l d F Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong><i class="bi bi-clock"></i> Horaire:</strong></td>
+                                    <td>{{ reservation.heure_debut }} - {{ reservation.heure_fin }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong><i class="bi bi-file-text"></i> Motif:</strong></td>
+                                    <td>{{ reservation.motif|truncatewords:15 }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <p class="text-center mb-4">
+                        <i class="bi bi-question-circle text-danger" style="font-size: 3rem;"></i><br>
+                        <strong>Êtes-vous sûr de vouloir annuler cette réservation ?</strong>
+                    </p>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="bi bi-trash"></i> Oui, annuler la réservation
+                            </button>
+                            <a href="{% url 'detail_reservation' reservation.pk %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-x-circle"></i> Non, revenir en arrière
+                            </a>
+                        </div>
+                    </form>
+
+                    <div class="alert alert-info mt-4 mb-0">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Après l'annulation :</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>La salle redeviendra disponible pour ce créneau</li>
+                            <li>Vous recevrez une notification de confirmation</li>
+                            <li>La réservation apparaîtra dans vos archives</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

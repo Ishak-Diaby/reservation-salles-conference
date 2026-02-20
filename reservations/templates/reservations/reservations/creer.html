@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Nouvelle Réservation{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Accueil</a></li>
+            <li class="breadcrumb-item active">Nouvelle réservation</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-calendar-plus"></i> Nouvelle Réservation
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if salle %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        Vous réservez la salle: <strong>{{ salle.nom }}</strong>
+                    </div>
+                    {% endif %}
+
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.salle.id_for_label }}" class="form-label">
+                                <i class="bi bi-door-open"></i> Salle *
+                            </label>
+                            {{ form.salle }}
+                            {% if form.salle.errors %}
+                                <div class="text-danger small mt-1">{{ form.salle.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Sélectionnez la salle que vous souhaitez réserver
+                            </small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date_reservation.id_for_label }}" class="form-label">
+                                    <i class="bi bi-calendar"></i> Date de réservation *
+                                </label>
+                                {% render_field form.date_reservation class="form-control" required="required" %}
+                                {% if form.date_reservation.errors %}
+                                    <div class="text-danger small mt-1">{{ form.date_reservation.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.nombre_participants.id_for_label }}" class="form-label">
+                                    <i class="bi bi-people"></i> Nombre de participants *
+                                </label>
+                                {% render_field form.nombre_participants class="form-control" required="required" %}
+                                {% if form.nombre_participants.errors %}
+                                    <div class="text-danger small mt-1">{{ form.nombre_participants.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.heure_debut.id_for_label }}" class="form-label">
+                                    <i class="bi bi-clock"></i> Heure de début *
+                                </label>
+                                {% render_field form.heure_debut class="form-control" required="required" %}
+                                {% if form.heure_debut.errors %}
+                                    <div class="text-danger small mt-1">{{ form.heure_debut.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.heure_fin.id_for_label }}" class="form-label">
+                                    <i class="bi bi-clock-fill"></i> Heure de fin *
+                                </label>
+                                {% render_field form.heure_fin class="form-control" required="required" %}
+                                {% if form.heure_fin.errors %}
+                                    <div class="text-danger small mt-1">{{ form.heure_fin.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.motif.id_for_label }}" class="form-label">
+                                <i class="bi bi-file-text"></i> Motif de la réservation *
+                            </label>
+                            {{ form.motif }}
+                            {% if form.motif.errors %}
+                                <div class="text-danger small mt-1">{{ form.motif.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                Indiquez la raison de votre réservation (cours, réunion, examen, etc.)
+                            </small>
+                        </div>
+
+                        {% if user.type_utilisateur == 'etudiant' %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            <strong>Note:</strong> En tant qu'étudiant, votre réservation devra être validée par un administrateur.
+                        </div>
+                        {% endif %}
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> 
+                            <strong>Rappel:</strong> 
+                            <ul class="mb-0 mt-2">
+                                <li>Durée minimale: 30 minutes</li>
+                                <li>Durée maximale: 4 heures</li>
+                                <li>Modification/Annulation possible jusqu'à 2h avant</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Créer la réservation
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

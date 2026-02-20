@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Mes Réservations{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-6">
+                <i class="bi bi-calendar-check"></i> Mes Réservations
+            </h1>
+            <p class="text-muted">Gérez toutes vos réservations</p>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="btn-group" role="group">
+                <a href="{% url 'mes_reservations' %}" 
+                   class="btn {% if not statut_filtre %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                    <i class="bi bi-list"></i> Toutes
+                </a>
+                <a href="?statut=en_attente" 
+                   class="btn {% if statut_filtre == 'en_attente' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                    <i class="bi bi-clock-history"></i> En attente
+                </a>
+                <a href="?statut=confirmee" 
+                   class="btn {% if statut_filtre == 'confirmee' %}btn-success{% else %}btn-outline-success{% endif %}">
+                    <i class="bi bi-check-circle"></i> Confirmées
+                </a>
+                <a href="?statut=annulee" 
+                   class="btn {% if statut_filtre == 'annulee' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
+                    <i class="bi bi-x-circle"></i> Annulées
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des réservations -->
+    {% if reservations %}
+    <div class="row g-3">
+        {% for reservation in reservations %}
+        <div class="col-12">
+            <div class="card {% if reservation.statut == 'confirmee' %}border-success{% elif reservation.statut == 'en_attente' %}border-warning{% elif reservation.statut == 'annulee' %}border-secondary{% endif %}">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2">
+                            <div class="text-center">
+                                <div class="display-6 text-primary">
+                                    {{ reservation.date_reservation|date:"d" }}
+                                </div>
+                                <div class="text-muted">
+                                    {{ reservation.date_reservation|date:"M Y" }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h5 class="mb-2">
+                                <i class="bi bi-door-open text-primary"></i> 
+                                {{ reservation.salle.nom }}
+                            </h5>
+                            <p class="mb-1">
+                                <i class="bi bi-clock"></i> 
+                                <strong>{{ reservation.heure_debut }}</strong> - <strong>{{ reservation.heure_fin }}</strong>
+                            </p>
+                            <p class="mb-1">
+                                <i class="bi bi-building"></i> {{ reservation.salle.batiment }}
+                            </p>
+                            <p class="mb-0 text-muted">
+                                <i class="bi bi-file-text"></i> {{ reservation.motif|truncatewords:10 }}
+                            </p>
+                        </div>
+
+                        <div class="col-md-2 text-center">
+                            {% if reservation.statut == 'confirmee' %}
+                                <span class="badge bg-success p-2">
+                                    <i class="bi bi-check-circle"></i> Confirmée
+                                </span>
+                            {% elif reservation.statut == 'en_attente' %}
+                                <span class="badge bg-warning text-dark p-2">
+                                    <i class="bi bi-clock-history"></i> En attente
+                                </span>
+                            {% elif reservation.statut == 'annulee' %}
+                                <span class="badge bg-secondary p-2">
+                                    <i class="bi bi-x-circle"></i> Annulée
+                                </span>
+                            {% elif reservation.statut == 'refusee' %}
+                                <span class="badge bg-danger p-2">
+                                    <i class="bi bi-x-octagon"></i> Refusée
+                                </span>
+                            {% endif %}
+                            
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-people"></i> 
+                                    {{ reservation.nombre_participants }}
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'detail_reservation' reservation.pk %}" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye"></i> Détails
+                                </a>
+                                {% if reservation.statut in 'en_attente,confirmee' and reservation.peut_etre_modifiee %}
+                                <a href="{% url 'annuler_reservation' reservation.pk %}" 
+                                   class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash"></i> Annuler
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-calendar-x text-muted" style="font-size: 4rem;"></i>
+            <h4 class="mt-3">Aucune réservation</h4>
+            <p class="text-muted">
+                {% if statut_filtre %}
+                    Vous n'avez aucune réservation avec ce statut.
+                {% else %}
+                    Vous n'avez pas encore effectué de réservation.
+                {% endif %}
+            </p>
+            <a href="{% url 'creer_reservation' %}" class="btn btn-primary mt-3">
+                <i class="bi bi-plus-circle"></i> Créer une réservation
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
